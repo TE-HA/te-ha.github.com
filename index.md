@@ -1,14 +1,14 @@
 <table border="0">
-  <tr>
-    <td width="100%">
-      <h1>欢迎来到618</h1>
+<tr>
+    <td width="75%">
+      <h1>张三</h1>
+      <p><b>硕士研究生</b></p>
+      <p><b>××大学××学院</b></p>
+      <p><b>邮箱：1234567789@qq.com</b></p>
+      <p><b>地址：××市××区××路××号××大学，××楼，邮编×××</b></p>
     </td>
     <td width="25%">
-      <img src="/111.jpg" width="100%">
-    </td>
-    </td>
-    <td width="25%">
-      <img src="/222.jpg" width="100%">
+      <img src="/111.jpg" width="100%">      % 插入证件照代码
     </td>
   </tr>
 </table>
