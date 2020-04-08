@@ -7,7 +7,7 @@
     </td>
      </td>
     <td width="50%">
-        <img src="/22.jpg" width="100%"> 
+        <img src="/22.jpg" width="100%" rotate="90"> 
     </td>
   </tr>
 </table>
