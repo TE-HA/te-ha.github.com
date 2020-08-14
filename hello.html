@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>送给吴爽大笨蛋</title>
+    <style type="text/css">
+    div {
+        float: left;
+    }
+    body,
+    html {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        font-family: "微软雅黑";
+    }
+    #map {
+        width: 80%;
+        height: 100%;
+    }
+    #show {
+        width: 20%;
+        height: 100%;
+    }
+    #textResult {
+        width: 20%;
+        height: 100%;
+    }
+    p {
+        margin-left: 15px;
+        font-size: 14px;
+    }
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=O5VDdKwOolydGqC3g0yT5UOP0skyYe7X"></script>
+    </script>
+    <script type="text/javascript">
+    //<![CDATA[
+
+    //方便后续调用的函数
+    function find(id) {
+        return document.getElementById(id); //定义,以便调用  
+    }
+
+
+    //地图初始化添加控件
+    function mapmap(map) {
+        map.addControl(new BMap.ScaleControl()); //添加左下方比例尺控件
+        map.enableScrollWheelZoom(true); //开启鼠标滚轮缩放
+        map.addControl(new BMap.MapTypeControl());
+        map.addControl(new BMap.NavigationControl()); //平移缩放控件
+        map.addControl(new BMap.ScaleControl()); //比例尺控件
+        map.addControl(new BMap.OverviewMapControl()); //缩略图控件
+    }
+
+    function load() {
+        //var map = new BMap.Map("map"); // 创建Map实例
+        //map.centerAndZoom(new BMap.Point(114.340855, 30.515682), 16);
+        //mapmap(map);
+    }
+
+    //var 
+    //下载所生成的数据
+    function download() {
+        var text = find("txtResult").value;
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', "hello.txt");
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+
+    var findPointslng = [];
+    var findPointslat = [];
+
+    ///矩形框搜索和路径最优化搜索
+    function recsearch() {
+        //经纬度
+
+        var map = new BMap.Map("map"); // 创建Map实例
+        var city = new BMap.LocalSearch(map, { renderOptions: { map: map, autoViewport: true } });
+        //。。。定位到经纬度
+
+        var leftdownlng = Math.min.apply(null, findPointslng);
+        var rightuplng = Math.max.apply(null, findPointslng);
+        var leftdownlat = Math.min.apply(null, findPointslat);
+        var rightuplat = Math.max.apply(null, findPointslat);
+
+        map.centerAndZoom(new BMap.Point(findPointslng[0], findPointslat[0]), 16);
+        mapmap(map);
+
+        //范围必须为左下到右上
+        var pStart = new BMap.Point(leftdownlng, leftdownlat); //左下
+
+        var pEnd = new BMap.Point(rightuplng, rightuplat); //右上
+
+        var bs = new BMap.Bounds(pStart, pEnd); //自己规定范围
+        //alert("woca");
+        var local = new BMap.LocalSearch(map, { renderOptions: { map: map } });
+        local.searchInBounds(find("txtRecSearch").value, bs);
+        find("txtResult").value = ""; //初始化数据
+        local.setSearchCompleteCallback(function(rs) {
+            if (local.getStatus() == BMAP_STATUS_SUCCESS) {
+                for (j = 0; j < rs.getCurrentNumPois(); j++) {
+                    var poi = rs.getPoi(j);
+
+                    find("txtResult").value += poi.title + "(" + poi.point.lng + "," + poi.point.lat + ')' + '\n';
+                }
+            }
+        }); //将查询得到的数据显示在result文本框中
+        var polygon = new BMap.Polygon([
+            new BMap.Point(pStart.lng, pStart.lat),
+            new BMap.Point(pEnd.lng, pStart.lat),
+            new BMap.Point(pEnd.lng, pEnd.lat),
+            new BMap.Point(pStart.lng, pEnd.lat)
+        ], { strokeColor: "blue", strokeWeight: 6, strokeOpacity: 0.5 });
+        map.addOverlay(polygon); //将查询的矩形显示在图上
+
+        //定义路径
+        var walk = new BMap.WalkingRoute(map, {
+            renderOptions: { map: map }
+        });
+        var lujingstart = new BMap.Point(findPointslng[0], findPointslat[0]);
+        var lujingend = new BMap.Point(findPointslng[1], findPointslat[1]);
+
+        walk.search(lujingstart, lujingend);
+    }
+
+    function localsearch(map, cityname, addrname) {
+        var ls = new BMap.LocalSearch(cityname);
+        ls.search(addrname);
+        var i = 1;
+        //alert("woca");
+        ls.setSearchCompleteCallback(function(rs) {
+            //find("txtResult").value+=ls.getStatus()+'\n';//检索状态码
+            //alert("woca1");
+            //setTimeout("rs", 5000);
+            //alert("woca2");
+            if (ls.getStatus() == BMAP_STATUS_SUCCESS) {
+                for (j = 0; j < rs.getCurrentNumPois(); j++) {
+                    var poi = rs.getPoi(j);
+                    //添加经纬度
+                    if (j == 0) {
+                        findPointslng.push(poi.point.lng);
+                        findPointslat.push(poi.point.lat);
+                    } else {}
+                    //如果查询到，则添加红色marker
+                    map.addOverlay(new BMap.Marker(poi.point));
+
+                    var pt = new BMap.Point(poi.point.lng, poi.point.lat)
+
+                    find("txtResult").value += poi.title + "(" + poi.point.lng + "," + poi.point.lat + ')' + '\n';
+                }
+            }
+
+        });
+    }
+
+    function search() {
+    	/*
+        var map = new BMap.Map("map"); // 创建Map实例
+        var city = new BMap.LocalSearch(map, { renderOptions: { map: map, autoViewport: true } });
+        map.centerAndZoom(new BMap.Point(114.314703, 30.547014), 14);
+        mapmap(map);
+        find("txtResult").value = "" //每次生成前清空文本域
+        map.clearOverlays(); //清除地图上所有标记
+
+        /*
+        复现方式：直接点击生成左边序列按钮即可。
+        出现问题的代码段：搜索两个属性的时候，同一个按钮点击时确实出现了不同的显示结果
+        本来应该出现两个范围（街道口、黄鹤楼）的结果，但目前的情况是：1.只出现街道口 2.出现街道口和黄鹤楼 这两种情况随机出现。回复较晚，谢谢！
+        
+        var cityarr = new Array();
+        var shuxing = new Array();
+
+        cityarr = find("txtCity").value.split("、");
+        shuxing = find("txtSearch").value.split("、");
+        //shuxing[1] = "黄鹤楼";
+        //alert(shuxing[1]);
+        for (h = 0; h < shuxing.length; h++) {
+            var s = shuxing[h];
+            for (k = 0; k < cityarr.length; k++) {
+                var c = cityarr[k];
+                localsearch(map, c, s);
+            }
+        }
+        出现问题的代码段（↑）*/
+        alert("吴爽 你好！");
+        //download("hello.txt", outputtxtinfo);
+    }
+    //]]>
+    </script>
+</head>
+
+<body onload="load()" onunload="GUnload()">
+    <div id="show">
+                <input type="button" value="请点击" onclick="search()" />
+                    
+    </div>
+    <div id="map"></div>
+</body>
+
+</html>
